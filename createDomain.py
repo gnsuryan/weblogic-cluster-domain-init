@@ -326,7 +326,7 @@ def start_ManagedServers():
                                 start(membername,'Server')
 
 
-if __name__ == "__main__":
+if __name__ != "__main__":
         _dict={};
         Enable_wlst_log_redirection()
         print "Start of the script Execution >>"
@@ -363,3 +363,6 @@ if __name__ == "__main__":
         print "End of Script Execution << \nGood Bye!"
         Stop_wlst_log_redirection()
         sys.exit(0)
+
+if __name__ == "__main__":
+	print "This script has to be executed with weblogic WLST"
