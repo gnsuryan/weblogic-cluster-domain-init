@@ -31,7 +31,7 @@ def printdomain():
                 print key,"=>",val
 
 def export_properties():
-        global _dict
+
         global mwhome
         global wlshome
         global domainroot
@@ -213,6 +213,26 @@ def start_AdminServer():
                 print "ERROR: Unable to Start AdminServer"
                 print "Dumpstack: \n -------------- \n",dumpStack()
 
+def restart_AdminServer():
+        try:
+                global managementurl
+                managementurl = "t3://"+adminAddress+":"+adminPort
+                global AdminServerDir
+                AdminServerDir = domainroot+"/"+domainName+"/servers/AdminServer"
+                global AdminServerLogDir
+                AdminServerLog = AdminServerDir+"/logs/AdminServer.log"
+                global DomainDir
+                DomainDir = domainroot+"/"+domainName
+
+                print "\nRedirecting Startup Logs to",AdminServerLog
+                shutdown('AdminServer','Server',force='true',block='true')
+                print 'AdminServer shutdown successfully'
+                startServer('AdminServer',domainName,managementurl,domain_username,domain_password,DomainDir,'true',60000,serverLog=AdminServerLog)
+                print "AdminServer has been successfully restarted"
+        except:
+                print "ERROR: Unable to Start AdminServer"
+                print "Dumpstack: \n -------------- \n",dumpStack()
+
 def connect_online():
         try:
                 global managementurl
@@ -326,43 +346,51 @@ def start_ManagedServers():
                                 start(membername,'Server')
 
 
+def run_main():
+    global _dict
+    _dict={};
+    Enable_wlst_log_redirection()
+    print "Start of the script Execution >>"
+    print "Parsing the properties file..."
+    parsefile()
+    print "Exporting the Properties to variables.."
+    export_properties()
+    print "Creating Domain from Domain Template..."
+    read_template()
+    print_withformat("Creating Machines")
+    create_machine()
+    print_somelines()
+    print_withformat("Creating AdminServer")
+    create_admin()
+    print_somelines()
+    print_withformat("Creating ManagedServers")
+    create_managedserver()
+    print_somelines()
+    print_withformat("Creating Clusters")
+    create_clusters()
+    print_somelines()
+    print "\nCommit and Saving the Domain"
+    commit_writedomain()
+    print_withformat("Domain Summary")
+    print_domainsummary()
+    print_somelines()
+    print("Starting the AdminServer")
+    start_AdminServer()
+    connect_online()
+    map_machines()
+    map_clusters()
+    start_NodeManager()
+    start_ManagedServers()
+    restart_AdminServer()
+    print "End of Script Execution << \nGood Bye!"
+    Stop_wlst_log_redirection()
+    sys.exit(0)
+
 if __name__ != "__main__":
-        _dict={};
-        Enable_wlst_log_redirection()
-        print "Start of the script Execution >>"
-        print "Parsing the properties file..."
-        parsefile()
-        print "Exporting the Properties to variables.."
-        export_properties()
-        print "Creating Domain from Domain Template..."
-        read_template()
-        print_withformat("Creating Machines")
-        create_machine()
-        print_somelines()
-        print_withformat("Creating AdminServer")
-        create_admin()
-        print_somelines()
-        print_withformat("Creating ManagedServers")
-        create_managedserver()
-        print_somelines()
-        print_withformat("Creating Clusters")
-        create_clusters()
-        print_somelines()
-        print "\nCommit and Saving the Domain"
-        commit_writedomain()
-        print_withformat("Domain Summary")
-        print_domainsummary()
-        print_somelines()
-        print("Starting the AdminServer")
-        start_AdminServer()
-        connect_online()
-        map_machines()
-        map_clusters()
-        start_NodeManager()
-        start_ManagedServers()
-        print "End of Script Execution << \nGood Bye!"
-        Stop_wlst_log_redirection()
-        sys.exit(0)
+    run_main()
+
 
 if __name__ == "__main__":
-	print "This script has to be executed with weblogic WLST"
+    print "This script has to be executed with weblogic WLST"
+    run_main()
+
